@@ -3,6 +3,7 @@ using DiscordGameDealsBot.Database.Models;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using System.Collections.Generic;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace DiscordGameDealsBot.Database.Repositories;
@@ -49,6 +50,13 @@ class DiscordMessageRepository : IDiscordMessageRepository
         using var _db = new MySqlConnection(_config.GetConnectionString("Default"));
         await _db.OpenAsync();
         return await _db.QueryAsync<DiscordMessage>("SELECT * FROM discord_messages WHERE channelid = (SELECT id FROM discord_channels WHERE channelid = @channelId);", new { @channelId = channelId });
+    }
+
+    public async Task<DiscordMessage> GetByMessageId(ulong messageId)
+    {
+        using var _db = new MySqlConnection(_config.GetConnectionString("Default"));
+        await _db.OpenAsync();
+        return await _db.QueryFirstOrDefaultAsync<DiscordMessage>("SELECT * FROM discord_messages WHERE messageid = @messageid;", new { @messageid = messageId });
     }
 }
 

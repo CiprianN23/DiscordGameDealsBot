@@ -12,15 +12,27 @@ public class DiscordChannelService
 {
     private readonly DiscordClient _discordClient;
     private readonly IDiscordGuildRepository _discordGuildRepository;
+    private readonly IDiscordMessageRepository _discordMessageRepository;
 
-    public DiscordChannelService(DiscordClient discordClient, IDiscordGuildRepository repository)
+    public DiscordChannelService(DiscordClient discordClient, IDiscordGuildRepository repository, IDiscordMessageRepository discordMessageRepository)
     {
         _discordClient = discordClient;
         _discordGuildRepository = repository;
+        _discordMessageRepository = discordMessageRepository;
 
         _discordClient.GuildDownloadCompleted += RemoveUnusedGuildsOnStartup;
         _discordClient.GuildDeleted += DeleteGuildOnBotLeave;
         _discordClient.GuildCreated += AddGuildTToDatabaseOnJoin;
+        _discordClient.MessageDeleted += RemoveMessageFromDatabaseIfRemoved;
+    }
+
+    private async Task RemoveMessageFromDatabaseIfRemoved(DiscordClient sender, MessageDeleteEventArgs e)
+    {
+        var databaseMessage = await _discordMessageRepository.GetByMessageId(e.Message.Id);
+        if (databaseMessage != null)
+        {
+            await _discordMessageRepository.DeleteAsync(e.Message.Id);
+        }
     }
 
     private async Task AddGuildTToDatabaseOnJoin(DiscordClient sender, GuildCreateEventArgs e)

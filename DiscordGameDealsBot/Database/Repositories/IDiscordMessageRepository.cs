@@ -11,5 +11,6 @@ public interface IDiscordMessageRepository
     Task<int> DeleteAsync(ulong messageId);
     Task<DiscordMessage> GetByRedditPostAndChannel(ulong redditPostId, ulong channelId);
     Task<IEnumerable<DiscordMessage>> GetAllByChannelAsync(ulong channelId);
+    Task<DiscordMessage> GetByMessageId(ulong messageId);
 }
 
