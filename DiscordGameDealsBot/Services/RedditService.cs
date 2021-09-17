@@ -69,7 +69,7 @@ public class RedditService
 
     private async void DealExpiredTimer()
     {
-        var timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+        var timer = new PeriodicTimer(TimeSpan.FromHours(1));
         while (await timer.WaitForNextTickAsync())
         {
             var databaseRedditPosts = await _redditPostRepository.GetAllAsync();
