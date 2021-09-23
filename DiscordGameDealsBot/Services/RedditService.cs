@@ -7,6 +7,7 @@ using Reddit.Controllers.EventArgs;
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace DiscordGameDealsBot.Services;
 
@@ -36,7 +37,7 @@ public class RedditService
         subReddit.Posts.NewUpdated += Posts_NewUpdated;
         subReddit.Posts.NewUpdated += Posts_NewRemoved;
 
-        DealExpiredTimer();
+        _ = DealExpiredTimer();
     }
 
     private async void Posts_NewRemoved(object? sender, PostsUpdateEventArgs e)
@@ -67,7 +68,7 @@ public class RedditService
         }
     }
 
-    private async void DealExpiredTimer()
+    private async Task DealExpiredTimer()
     {
         var timer = new PeriodicTimer(TimeSpan.FromHours(1));
         while (await timer.WaitForNextTickAsync())
