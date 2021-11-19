@@ -6,4 +6,3 @@ public class RedditPost
     public string Fullname { get; set; }
     public string Permalink { get; set; }
 }
-

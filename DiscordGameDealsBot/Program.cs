@@ -9,6 +9,7 @@ using System;
 using System.Threading.Tasks;
 
 namespace DiscordGameDealsBot;
+
 public static class Program
 {
     private static IConfigurationRoot? _config;
@@ -61,4 +62,3 @@ public static class Program
         await Task.Delay(-1);
     }
 }
-

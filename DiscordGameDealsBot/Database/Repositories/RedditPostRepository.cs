@@ -18,21 +18,21 @@ public class RedditPostRepository : IRedditPostRepository
 
     public async Task<ulong> InsertAsync(string fullname, string permalink)
     {
-        using var _db = new MySqlConnection(_config.GetConnectionString("Default"));
+        await using var _db = new MySqlConnection(_config.GetConnectionString("Default"));
         await _db.OpenAsync();
         return await _db.ExecuteScalarAsync<ulong>("INSERT INTO reddit_posts (fullname, permalink) VALUES (@fullname, @permalink) RETURNING Id;", new { @fullname = fullname, @permalink = permalink });
     }
 
     public async Task<IEnumerable<RedditPost>> GetAllAsync()
     {
-        using var _db = new MySqlConnection(_config.GetConnectionString("Default"));
+        await using var _db = new MySqlConnection(_config.GetConnectionString("Default"));
         await _db.OpenAsync();
         return await _db.QueryAsync<RedditPost>("SELECT id, fullname, permalink FROM reddit_posts;");
     }
 
     public async Task<int> DeleteAsync(string permalink)
     {
-        using var _db = new MySqlConnection(_config.GetConnectionString("Default"));
+        await using var _db = new MySqlConnection(_config.GetConnectionString("Default"));
         await _db.OpenAsync();
         return await _db.ExecuteAsync("DELETE FROM reddit_posts WHERE permalink = @permalink;", new { @permalink = permalink });
     }

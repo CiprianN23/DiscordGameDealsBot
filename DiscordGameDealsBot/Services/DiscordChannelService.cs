@@ -1,8 +1,6 @@
-﻿using DiscordGameDealsBot.Database.Models;
-using DiscordGameDealsBot.Database.Repositories;
+﻿using DiscordGameDealsBot.Database.Repositories;
 using DSharpPlus;
 using DSharpPlus.EventArgs;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -48,27 +46,14 @@ public class DiscordChannelService
         await DeleteGuildFromDatabase(e.Guild.Id);
     }
 
-
-    // TODO: Improve lookup and remove
     private async Task RemoveUnusedGuildsOnStartup(DiscordClient sender, GuildDownloadCompletedEventArgs e)
     {
         var databaseGuilds = await _discordGuildRepository.GetAllAsync();
 
-        List<DiscordGuild> guildsFound = new();
-        foreach (var guild in e.Guilds)
+        var guildsToDelete = databaseGuilds.Where(dg => !e.Guilds.Any(eg => dg.Guild == eg.Value.Id));
+        foreach (var guild in guildsToDelete)
         {
-            var databaseGuild = await _discordGuildRepository.GetByGuildIdAsync(guild.Value.Id);
-            if (databaseGuild == null)
-                continue;
-
-            guildsFound.Add(databaseGuild);
-        }
-
-        List<DiscordGuild> guildsToDelete = new();
-        guildsToDelete.AddRange(databaseGuilds.Where(i => !guildsFound.Any(e => i.Guild == e.Guild)));
-        foreach (var guildToDelete in guildsToDelete)
-        {
-            await DeleteGuildFromDatabase(guildToDelete.Guild);
+            await DeleteGuildFromDatabase(guild.Guild);
         }
 
         _discordClient.GuildDownloadCompleted -= RemoveUnusedGuildsOnStartup;
@@ -79,4 +64,3 @@ public class DiscordChannelService
         await _discordGuildRepository.DeleteAsync(guildId);
     }
 }
-

@@ -6,4 +6,3 @@ public class DiscordChannel
     public ulong GuildId { get; set; }
     public ulong ChannelId { get; set; }
 }
-

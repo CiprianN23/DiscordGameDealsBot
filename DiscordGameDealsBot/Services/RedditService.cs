@@ -21,6 +21,8 @@ public class RedditService
     private readonly IDiscordChannelRepository _discordChannelRepository;
     private readonly IDiscordMessageRepository _discordMessageRepository;
 
+    private readonly Task _timer;
+
     public RedditService(IConfigurationRoot config, DiscordClient discordClient, IDiscordMessageRepository discordMessageRepository, IDiscordChannelRepository discordChannelRepository, IRedditPostRepository redditPostRepository)
     {
         _config = config;
@@ -37,7 +39,7 @@ public class RedditService
         subReddit.Posts.NewUpdated += Posts_NewUpdated;
         subReddit.Posts.NewUpdated += Posts_NewRemoved;
 
-        _ = DealExpiredTimer();
+        _timer = DealExpiredTimer();
     }
 
     private async void Posts_NewRemoved(object? sender, PostsUpdateEventArgs e)
@@ -122,7 +124,7 @@ public class RedditService
             bool shouldPostOffer = false;
 
             // TODO: Change it to per-guild setting
-            for (int i = 75; i <= 100; i++)
+            for (int i = 65; i <= 100; i++)
             {
                 if (post.Title.Contains($"{i}%"))
                     shouldPostOffer = true;
@@ -150,4 +152,3 @@ public class RedditService
         }
     }
 }
-

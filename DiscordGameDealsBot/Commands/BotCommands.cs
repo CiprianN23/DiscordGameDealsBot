@@ -74,4 +74,3 @@ public class BotCommands : BaseCommandModule
         await ctx.RespondAsync("Game deals channel removed successfully!");
     }
 }
-

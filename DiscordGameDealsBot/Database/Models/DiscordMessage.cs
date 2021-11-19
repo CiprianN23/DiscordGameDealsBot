@@ -6,4 +6,3 @@ public class DiscordMessage
     public ulong RedditPost { get; set; }
     public ulong ChannelId { get; set; }
 }
-
