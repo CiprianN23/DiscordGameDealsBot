@@ -2,7 +2,7 @@
 
 public class RedditPost
 {
-    public ulong Id { get; set; }
-    public string Fullname { get; set; }
-    public string Permalink { get; set; }
+    public Guid Id { get; set; }
+    public string? FullName { get; set; }
+    public string? PermaLink { get; set; }
 }

@@ -2,7 +2,8 @@
 
 public class DiscordMessage
 {
-    public ulong MessageId { get; set; }
-    public ulong RedditPost { get; set; }
-    public ulong ChannelId { get; set; }
+    public Guid Id { get; set; }
+    public decimal MessageId { get; set; }
+    public Guid RedditPost { get; set; }
+    public Guid ChannelId { get; set; }
 }

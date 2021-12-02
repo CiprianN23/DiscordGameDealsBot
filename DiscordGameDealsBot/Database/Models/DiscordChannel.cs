@@ -2,7 +2,7 @@
 
 public class DiscordChannel
 {
-    public ulong Id { get; set; }
-    public ulong GuildId { get; set; }
-    public ulong ChannelId { get; set; }
+    public Guid Id { get; set; }
+    public Guid GuildId { get; set; }
+    public decimal ChannelId { get; set; }
 }

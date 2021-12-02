@@ -1,8 +1,6 @@
 ﻿using DiscordGameDealsBot.Database.Repositories;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace DiscordGameDealsBot.Commands;
 
@@ -22,7 +20,7 @@ public class BotCommands : BaseCommandModule
     [Command("plsdealshere")]
     [Description("Save channel to post deals into.")]
     [Hidden]
-    [RequireUserPermissions(DSharpPlus.Permissions.Administrator)]
+    [RequireUserPermissions(DSharpPlus.Permissions.None)]
     public async Task SaveChannel(CommandContext ctx)
     {
         await ctx.TriggerTypingAsync();
@@ -35,14 +33,14 @@ public class BotCommands : BaseCommandModule
         }
 
         var databaseGuild = await _discordGuildRepository.GetByGuildIdAsync(ctx.Guild.Id);
-        ulong databaseGuildId = databaseGuild != null ? databaseGuild.Id : 0;
+        Guid? databaseGuildId = databaseGuild?.Id;
 
-        if (databaseGuildId == 0)
+        if (databaseGuildId == null)
         {
             databaseGuildId = await _discordGuildRepository.InsertAsync(ctx.Guild.Id);
         }
 
-        await _discordChannelRepository.InsertAsync(databaseGuildId, ctx.Channel.Id);
+        await _discordChannelRepository.InsertAsync(databaseGuildId.Value, ctx.Channel.Id);
 
         await ctx.RespondAsync("Game deals channel saved successfully!");
     }
@@ -50,7 +48,7 @@ public class BotCommands : BaseCommandModule
     [Command("plsremovedeals")]
     [Description("Stop the bot from posting deals and deletes all posted deals.")]
     [Hidden]
-    [RequireUserPermissions(DSharpPlus.Permissions.Administrator)]
+    [RequireUserPermissions(DSharpPlus.Permissions.None)]
     public async Task DeleteChannel(CommandContext ctx)
     {
         await ctx.TriggerTypingAsync();
@@ -60,7 +58,7 @@ public class BotCommands : BaseCommandModule
         {
             foreach (var message in messages)
             {
-                var discordMessage = await ctx.Channel.GetMessageAsync(message.MessageId);
+                var discordMessage = await ctx.Channel.GetMessageAsync(decimal.ToUInt64(message.MessageId));
 
                 if (discordMessage == null)
                     continue;

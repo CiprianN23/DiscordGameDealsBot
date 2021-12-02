@@ -1,128 +1,166 @@
--- MariaDB dump 10.19  Distrib 10.5.12-MariaDB, for Win64 (AMD64)
 --
--- Host: localhost    Database: dealsbot
--- ------------------------------------------------------
--- Server version	10.5.12-MariaDB
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
---
--- Table structure for table `discord_channels`
+-- PostgreSQL database dump
 --
 
-DROP TABLE IF EXISTS `discord_channels`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `discord_channels` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `guildid` bigint(20) unsigned NOT NULL,
-  `channelid` bigint(20) unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `UC_DiscordChannels` (`guildid`),
-  CONSTRAINT `FK_Guilds_Channels` FOREIGN KEY (`guildid`) REFERENCES `discord_guilds` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- Dumped from database version 14.1
+-- Dumped by pg_dump version 14.1
+
+-- Started on 2021-12-02 14:29:28
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
 
 --
--- Dumping data for table `discord_channels`
+-- TOC entry 3 (class 2615 OID 2200)
+-- Name: public; Type: SCHEMA; Schema: -; Owner: -
 --
 
-LOCK TABLES `discord_channels` WRITE;
-/*!40000 ALTER TABLE `discord_channels` DISABLE KEYS */;
-/*!40000 ALTER TABLE `discord_channels` ENABLE KEYS */;
-UNLOCK TABLES;
+CREATE SCHEMA public;
+
 
 --
--- Table structure for table `discord_guilds`
+-- TOC entry 3340 (class 0 OID 0)
+-- Dependencies: 3
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
 --
 
-DROP TABLE IF EXISTS `discord_guilds`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `discord_guilds` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `guild` bigint(20) unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `UC_Guilds` (`guild`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
 
 --
--- Dumping data for table `discord_guilds`
+-- TOC entry 211 (class 1259 OID 16754)
+-- Name: discord_channels; Type: TABLE; Schema: public; Owner: -
 --
 
-LOCK TABLES `discord_guilds` WRITE;
-/*!40000 ALTER TABLE `discord_guilds` DISABLE KEYS */;
-/*!40000 ALTER TABLE `discord_guilds` ENABLE KEYS */;
-UNLOCK TABLES;
+CREATE TABLE public.discord_channels (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    channel_id numeric(20,1) NOT NULL,
+    guild_id uuid NOT NULL
+);
+
 
 --
--- Table structure for table `discord_messages`
+-- TOC entry 210 (class 1259 OID 16742)
+-- Name: discord_guilds; Type: TABLE; Schema: public; Owner: -
 --
 
-DROP TABLE IF EXISTS `discord_messages`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `discord_messages` (
-  `messageid` bigint(20) unsigned NOT NULL,
-  `redditpost` bigint(20) unsigned NOT NULL,
-  `channelid` bigint(20) unsigned NOT NULL,
-  KEY `FK_Messages_Reddit` (`redditpost`),
-  KEY `FK_Messages_Channel` (`channelid`),
-  CONSTRAINT `FK_Messages_Channel` FOREIGN KEY (`channelid`) REFERENCES `discord_channels` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `FK_Messages_Reddit` FOREIGN KEY (`redditpost`) REFERENCES `reddit_posts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE public.discord_guilds (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    guild numeric(20,1) NOT NULL
+);
+
 
 --
--- Dumping data for table `discord_messages`
+-- TOC entry 212 (class 1259 OID 16765)
+-- Name: discord_messages; Type: TABLE; Schema: public; Owner: -
 --
 
-LOCK TABLES `discord_messages` WRITE;
-/*!40000 ALTER TABLE `discord_messages` DISABLE KEYS */;
-/*!40000 ALTER TABLE `discord_messages` ENABLE KEYS */;
-UNLOCK TABLES;
+CREATE TABLE public.discord_messages (
+    message_id numeric(20,1) NOT NULL,
+    reddit_post uuid NOT NULL,
+    channel_id uuid NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL
+);
+
 
 --
--- Table structure for table `reddit_posts`
+-- TOC entry 209 (class 1259 OID 16736)
+-- Name: reddit_posts; Type: TABLE; Schema: public; Owner: -
 --
 
-DROP TABLE IF EXISTS `reddit_posts`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `reddit_posts` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `fullname` varchar(20) NOT NULL,
-  `permalink` varchar(120) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE public.reddit_posts (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    perma_link character varying(120) NOT NULL,
+    full_name character varying(20) NOT NULL
+);
 
 --
--- Dumping data for table `reddit_posts`
+-- TOC entry 3186 (class 2606 OID 16759)
+-- Name: discord_channels discord_channels_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-LOCK TABLES `reddit_posts` WRITE;
-/*!40000 ALTER TABLE `reddit_posts` DISABLE KEYS */;
-/*!40000 ALTER TABLE `reddit_posts` ENABLE KEYS */;
-UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+ALTER TABLE ONLY public.discord_channels
+    ADD CONSTRAINT discord_channels_pkey PRIMARY KEY (id);
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-09-17 15:50:59
+--
+-- TOC entry 3182 (class 2606 OID 16747)
+-- Name: discord_guilds discord_guild_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.discord_guilds
+    ADD CONSTRAINT discord_guild_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3184 (class 2606 OID 16782)
+-- Name: discord_guilds discord_guilds_guild_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.discord_guilds
+    ADD CONSTRAINT discord_guilds_guild_key UNIQUE (guild);
+
+
+--
+-- TOC entry 3188 (class 2606 OID 16770)
+-- Name: discord_messages discord_messages_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.discord_messages
+    ADD CONSTRAINT discord_messages_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3180 (class 2606 OID 16741)
+-- Name: reddit_posts reddit_post_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reddit_posts
+    ADD CONSTRAINT reddit_post_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3189 (class 2606 OID 16760)
+-- Name: discord_channels discordchannels_discordguilds_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.discord_channels
+    ADD CONSTRAINT discordchannels_discordguilds_fkey FOREIGN KEY (guild_id) REFERENCES public.discord_guilds(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3190 (class 2606 OID 16771)
+-- Name: discord_messages discordchannels_discordmessages_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.discord_messages
+    ADD CONSTRAINT discordchannels_discordmessages_fkey FOREIGN KEY (channel_id) REFERENCES public.discord_channels(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3191 (class 2606 OID 16776)
+-- Name: discord_messages redditposts_discordmessages_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.discord_messages
+    ADD CONSTRAINT redditposts_discordmessages_fkey FOREIGN KEY (reddit_post) REFERENCES public.reddit_posts(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+-- Completed on 2021-12-02 14:29:28
+
+--
+-- PostgreSQL database dump complete
+--
+

@@ -1,9 +1,7 @@
 ﻿using Dapper;
 using DiscordGameDealsBot.Database.Models;
 using Microsoft.Extensions.Configuration;
-using MySqlConnector;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Npgsql;
 
 namespace DiscordGameDealsBot.Database.Repositories;
 
@@ -16,45 +14,45 @@ internal class DiscordMessageRepository : IDiscordMessageRepository
         _config = config;
     }
 
-    public async Task<int> InsertAsync(ulong messageId, ulong redditPost, ulong channelId)
+    public async Task<int> InsertAsync(decimal messageId, Guid redditPost, Guid channelId)
     {
-        await using var _db = new MySqlConnection(_config.GetConnectionString("Default"));
+        await using var _db = new NpgsqlConnection(_config.GetConnectionString("Default"));
         await _db.OpenAsync();
-        return await _db.ExecuteAsync("INSERT INTO discord_messages (messageid, redditpost, channelid) VALUES (@message_id, @reddit_post, @channel_id);", new { @message_id = messageId, @reddit_post = redditPost, @channel_id = channelId });
+        return await _db.ExecuteAsync("INSERT INTO discord_messages (message_id, reddit_post, channel_id) VALUES (@message_id, @reddit_post, @channel_id);", new { @message_id = messageId, @reddit_post = redditPost, @channel_id = channelId });
     }
 
     public async Task<IEnumerable<DiscordMessage>> GetAllAsync()
     {
-        await using var _db = new MySqlConnection(_config.GetConnectionString("Default"));
+        await using var _db = new NpgsqlConnection(_config.GetConnectionString("Default"));
         await _db.OpenAsync();
         return await _db.QueryAsync<DiscordMessage>("SELECT * FROM discord_messages;");
     }
 
-    public async Task<int> DeleteAsync(ulong messageId)
+    public async Task<int> DeleteAsync(decimal messageId)
     {
-        await using var _db = new MySqlConnection(_config.GetConnectionString("Default"));
+        await using var _db = new NpgsqlConnection(_config.GetConnectionString("Default"));
         await _db.OpenAsync();
-        return await _db.ExecuteAsync("DELETE FROM discord_messages WHERE messageid = @messageId;", new { @messageId = messageId });
+        return await _db.ExecuteAsync("DELETE FROM discord_messages WHERE message_id = @messageId;", new { @messageId = messageId });
     }
 
-    public async Task<DiscordMessage> GetByRedditPostAndChannel(ulong redditPostId, ulong channelId)
+    public async Task<DiscordMessage> GetByRedditPostAndChannel(Guid redditPostId, Guid channelId)
     {
-        await using var _db = new MySqlConnection(_config.GetConnectionString("Default"));
+        await using var _db = new NpgsqlConnection(_config.GetConnectionString("Default"));
         await _db.OpenAsync();
-        return await _db.QueryFirstOrDefaultAsync<DiscordMessage>("SELECT * FROM discord_messages WHERE redditpost = @redditPostId AND channelid = @channelId;", new { @redditPostId = redditPostId, @channelId = channelId });
+        return await _db.QueryFirstOrDefaultAsync<DiscordMessage>("SELECT * FROM discord_messages WHERE reddit_post = @redditPostId AND channel_id = @channelId;", new { @redditPostId = redditPostId, @channelId = channelId });
     }
 
-    public async Task<IEnumerable<DiscordMessage>> GetAllByChannelAsync(ulong channelId)
+    public async Task<IEnumerable<DiscordMessage>> GetAllByChannelAsync(decimal channelId)
     {
-        await using var _db = new MySqlConnection(_config.GetConnectionString("Default"));
+        await using var _db = new NpgsqlConnection(_config.GetConnectionString("Default"));
         await _db.OpenAsync();
-        return await _db.QueryAsync<DiscordMessage>("SELECT * FROM discord_messages WHERE channelid = (SELECT id FROM discord_channels WHERE channelid = @channelId);", new { @channelId = channelId });
+        return await _db.QueryAsync<DiscordMessage>("SELECT * FROM discord_messages WHERE channel_id = (SELECT id FROM discord_channels WHERE channel_id = @channelId);", new { @channelId = channelId });
     }
 
-    public async Task<DiscordMessage> GetByMessageId(ulong messageId)
+    public async Task<DiscordMessage> GetByMessageId(decimal messageId)
     {
-        await using var _db = new MySqlConnection(_config.GetConnectionString("Default"));
+        await using var _db = new NpgsqlConnection(_config.GetConnectionString("Default"));
         await _db.OpenAsync();
-        return await _db.QueryFirstOrDefaultAsync<DiscordMessage>("SELECT * FROM discord_messages WHERE messageid = @messageid;", new { @messageid = messageId });
+        return await _db.QueryFirstOrDefaultAsync<DiscordMessage>("SELECT * FROM discord_messages WHERE message_id = @messageid;", new { @messageid = messageId });
     }
 }
