@@ -18,8 +18,6 @@ public class RedditService
     private readonly IDiscordChannelRepository _discordChannelRepository;
     private readonly IDiscordMessageRepository _discordMessageRepository;
 
-    private readonly Task _timer;
-
     public RedditService(IConfigurationRoot config, DiscordClient discordClient, IDiscordMessageRepository discordMessageRepository, IDiscordChannelRepository discordChannelRepository, IRedditPostRepository redditPostRepository)
     {
         _config = config;
@@ -35,8 +33,6 @@ public class RedditService
         subReddit.Posts.MonitorNew();
         subReddit.Posts.NewUpdated += Posts_NewUpdated;
         subReddit.Posts.NewUpdated += Posts_NewRemoved;
-
-        _timer = DealExpiredTimer();
     }
 
     private async void Posts_NewRemoved(object? sender, PostsUpdateEventArgs e)
@@ -65,61 +61,58 @@ public class RedditService
                 await _redditPostRepository.DeleteAsync(removedPost.Permalink);
             }
         }
+
+        await DeleteDealsIfTheyAreExpiredOrRemoved();
     }
 
-    private async Task DealExpiredTimer()
+    private async Task DeleteDealsIfTheyAreExpiredOrRemoved()
     {
-        var timer = new PeriodicTimer(TimeSpan.FromHours(1));
-        while (await timer.WaitForNextTickAsync())
+        var databaseRedditPosts = await _redditPostRepository.GetAllAsync();
+
+        if (!databaseRedditPosts.Any())
+            return;
+
+        foreach (var databasePost in databaseRedditPosts)
         {
-            Console.WriteLine("Hello from deals clean timer.");
-            var databaseRedditPosts = await _redditPostRepository.GetAllAsync();
+            var redditPost = _redditClient.Post(databasePost.FullName).About();
 
-            if (!databaseRedditPosts.Any())
-                return;
-
-            foreach (var databasePost in databaseRedditPosts)
+            if (redditPost == null)
             {
-                var redditPost = _redditClient.Post(databasePost.FullName).About();
+                ArgumentNullException.ThrowIfNull(databasePost.PermaLink);
+                await _redditPostRepository.DeleteAsync(databasePost.PermaLink);
+                continue;
+            }
 
-                if (redditPost == null)
+            if ((!string.IsNullOrEmpty(redditPost.Listing.LinkFlairText) && string.Equals(redditPost.Listing.LinkFlairText, "Expired"))
+                || string.Equals(redditPost.Author, "[deleted]") || redditPost.Removed)
+            {
+                var discordGuildsChannels = await _discordChannelRepository.GetAllAAsync();
+
+                foreach (var databaseChannel in discordGuildsChannels)
                 {
-                    ArgumentNullException.ThrowIfNull(databasePost.PermaLink);
-                    await _redditPostRepository.DeleteAsync(databasePost.PermaLink);
-                    continue;
-                }
+                    var channel = await _discordClient.GetChannelAsync(decimal.ToUInt64(databaseChannel.ChannelId));
+                    var databaseMessage = await _discordMessageRepository.GetByRedditPostAndChannel(databasePost.Id, databaseChannel.Id);
 
-                if ((!string.IsNullOrEmpty(redditPost.Listing.LinkFlairText) && string.Equals(redditPost.Listing.LinkFlairText, "Expired"))
-                    || string.Equals(redditPost.Author, "[deleted]") || redditPost.Removed)
-                {
-                    var discordGuildsChannels = await _discordChannelRepository.GetAllAAsync();
+                    if (databaseMessage == null)
+                        continue;
 
-                    foreach (var databaseChannel in discordGuildsChannels)
+                    try
                     {
-                        var channel = await _discordClient.GetChannelAsync(decimal.ToUInt64(databaseChannel.ChannelId));
-                        var databaseMessage = await _discordMessageRepository.GetByRedditPostAndChannel(databasePost.Id, databaseChannel.Id);
-
-                        if (databaseMessage == null)
-                            continue;
-
-                        try
-                        {
-                            var message = await channel.GetMessageAsync(decimal.ToUInt64(databaseMessage.MessageId));
-                            await message.DeleteAsync();
-                        }
-                        catch (NotFoundException ex)
-                        {
-                            Console.WriteLine($"Message was not found to delete inside deal expire timer. Message Id: {databaseMessage.MessageId}");
-                            Console.WriteLine(ex.Message);
-                        }
-                        finally
-                        {
-                            await _discordMessageRepository.DeleteAsync(databaseMessage.MessageId);
-                        }
+                        var message = await channel.GetMessageAsync(decimal.ToUInt64(databaseMessage.MessageId));
+                        await message.DeleteAsync();
                     }
-
-                    await _redditPostRepository.DeleteAsync(redditPost.Permalink);
+                    catch (NotFoundException ex)
+                    {
+                        Console.WriteLine($"Message was not found to delete inside deal expire timer. Message Id: {databaseMessage.MessageId}");
+                        Console.WriteLine(ex.Message);
+                    }
+                    finally
+                    {
+                        await _discordMessageRepository.DeleteAsync(databaseMessage.MessageId);
+                    }
                 }
+
+                await _redditPostRepository.DeleteAsync(redditPost.Permalink);
             }
         }
     }
@@ -134,7 +127,7 @@ public class RedditService
             bool shouldPostOffer = false;
 
             // TODO: Change it to per-guild setting
-            for (int i = 80; i <= 100; i++)
+            for (int i = 75; i <= 100; i++)
             {
                 if (post.Title.Contains($"{i}%"))
                     shouldPostOffer = true;
