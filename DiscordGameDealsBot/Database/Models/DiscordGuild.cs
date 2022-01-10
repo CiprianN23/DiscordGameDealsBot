@@ -2,6 +2,6 @@
 
 public class DiscordGuild
 {
-    public ulong Id { get; set; }
-    public ulong Guild { get; set; }
+    public Guid Id { get; set; }
+    public decimal Guild { get; set; }
 }

@@ -1,8 +1,6 @@
 ﻿using DiscordGameDealsBot.Database.Repositories;
 using DSharpPlus;
 using DSharpPlus.EventArgs;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace DiscordGameDealsBot.Services;
 
@@ -53,7 +51,7 @@ public class DiscordChannelService
         var guildsToDelete = databaseGuilds.Where(dg => !e.Guilds.Any(eg => dg.Guild == eg.Value.Id));
         foreach (var guild in guildsToDelete)
         {
-            await DeleteGuildFromDatabase(guild.Guild);
+            await DeleteGuildFromDatabase(decimal.ToUInt64(guild.Guild));
         }
 
         _discordClient.GuildDownloadCompleted -= RemoveUnusedGuildsOnStartup;

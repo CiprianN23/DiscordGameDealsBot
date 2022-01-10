@@ -5,8 +5,6 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Threading.Tasks;
 
 namespace DiscordGameDealsBot;
 
@@ -16,7 +14,9 @@ public static class Program
 
     public static async Task Main()
     {
-        //Create the configurationNo service for type 'DiscordGameDealsBot
+        Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
+        //Create the configurationNo service for type 'DiscordGameDealsBota
         var _builder = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile(path: "appsettings.json");
