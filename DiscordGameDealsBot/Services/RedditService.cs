@@ -33,10 +33,14 @@ public class RedditService
         subReddit.Posts.MonitorNew();
         subReddit.Posts.NewUpdated += Posts_NewUpdated;
         subReddit.Posts.NewUpdated += Posts_NewRemoved;
+
+        _ = DeleteDealsIfTheyAreExpiredOrRemoved();
     }
 
     private async void Posts_NewRemoved(object? sender, PostsUpdateEventArgs e)
     {
+        Console.WriteLine($"{DateTimeOffset.Now} New post added/removed.");
+
         var databaseRedditPosts = await _redditPostRepository.GetAllAsync();
         foreach (var removedPost in e.Removed)
         {
@@ -67,6 +71,8 @@ public class RedditService
 
     private async Task DeleteDealsIfTheyAreExpiredOrRemoved()
     {
+        Console.WriteLine($"{DateTimeOffset.Now} Deal expired clean is running.");
+
         var databaseRedditPosts = await _redditPostRepository.GetAllAsync();
 
         if (!databaseRedditPosts.Any())
@@ -124,16 +130,7 @@ public class RedditService
             if (post.Created.Date != DateTime.Now.Date)
                 continue;
 
-            bool shouldPostOffer = false;
-
-            // TODO: Change it to per-guild setting
-            for (int i = 75; i <= 100; i++)
-            {
-                if (post.Title.Contains($"{i}%"))
-                    shouldPostOffer = true;
-            }
-
-            if (post.Title.Contains("Free") || shouldPostOffer)
+            if (post.Title.Contains("Free") || post.Title.Contains("100%"))
             {
                 var embed = new DiscordEmbedBuilder();
                 embed.AddField("Reddit post", $"[Click to open](https://reddit.com{post.Permalink})")
