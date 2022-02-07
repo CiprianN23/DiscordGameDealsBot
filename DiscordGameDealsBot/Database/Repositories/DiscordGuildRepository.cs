@@ -16,28 +16,28 @@ public class DiscordGuildRepository : IDiscordGuildRepository
 
     public async Task<Guid> InsertAsync(decimal guildId)
     {
-        await using var _db = new NpgsqlConnection(_config["DISCORD_DBConnection"]);
+        await using var _db = new NpgsqlConnection(Environment.GetEnvironmentVariable("DISCORD_DBConnection"));
         await _db.OpenAsync();
         return await _db.ExecuteScalarAsync<Guid>("INSERT INTO discord_guilds (guild) VALUES (@guildId) ON CONFLICT (guild) DO NOTHING RETURNING id;", new { @guildId = guildId });
     }
 
     public async Task<int> DeleteAsync(decimal guildId)
     {
-        await using var _db = new NpgsqlConnection(_config["DISCORD_DBConnection"]);
+        await using var _db = new NpgsqlConnection(Environment.GetEnvironmentVariable("DISCORD_DBConnection"));
         await _db.OpenAsync();
         return await _db.ExecuteAsync("DELETE FROM discord_guilds WHERE guild = @guildId;", new { @guildId = guildId });
     }
 
     public async Task<IEnumerable<DiscordGuild>> GetAllAsync()
     {
-        await using var _db = new NpgsqlConnection(_config["DISCORD_DBConnection"]);
+        await using var _db = new NpgsqlConnection(Environment.GetEnvironmentVariable("DISCORD_DBConnection"));
         await _db.OpenAsync();
         return await _db.QueryAsync<DiscordGuild>("SELECT * FROM discord_guilds;");
     }
 
     public async Task<DiscordGuild> GetByGuildIdAsync(decimal guildId)
     {
-        await using var _db = new NpgsqlConnection(_config["DISCORD_DBConnection"]);
+        await using var _db = new NpgsqlConnection(Environment.GetEnvironmentVariable("DISCORD_DBConnection"));
         await _db.OpenAsync();
         return await _db.QueryFirstOrDefaultAsync<DiscordGuild>("SELECT * FROM discord_guilds WHERE guild = @guildId;", new { @guildId = guildId });
     }

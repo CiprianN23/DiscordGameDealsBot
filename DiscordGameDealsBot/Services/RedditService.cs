@@ -26,9 +26,9 @@ public class RedditService
         _discordChannelRepository = discordChannelRepository;
         _redditPostRepository = redditPostRepository;
 
-        _redditClient = new RedditClient(appId: _config["DISCORD_RedditAppId"], appSecret: _config["DISCORD_RedditAppSecret"], refreshToken: _config["DISCORD_RedditRefreshToken"]);
+        _redditClient = new RedditClient(appId: Environment.GetEnvironmentVariable("DISCORD_RedditAppId"), appSecret: Environment.GetEnvironmentVariable("DISCORD_RedditAppSecret"), refreshToken: Environment.GetEnvironmentVariable("DISCORD_RedditRefreshToken"));
 
-        var subReddit = _redditClient.Subreddit(_config["DISCORD_Subreddit"]);
+        var subReddit = _redditClient.Subreddit(Environment.GetEnvironmentVariable("DISCORD_Subreddit"));
         subReddit.Posts.GetNew();
         subReddit.Posts.MonitorNew();
         subReddit.Posts.NewUpdated += Posts_NewUpdated;

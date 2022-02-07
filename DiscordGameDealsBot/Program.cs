@@ -19,13 +19,13 @@ public static class Program
         //Create the configurationNo service for type 'DiscordGameDealsBota
         var _builder = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: true)
-            .AddEnvironmentVariables();
+            .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: true);
+
         _config = _builder.Build();
 
         var discordClient = new DiscordClient(new DiscordConfiguration()
         {
-            Token = _config["DISCORD_TOKEN"],
+            Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN"),
             TokenType = TokenType.Bot,
             AutoReconnect = true,
             AlwaysCacheMembers = false
