@@ -20,7 +20,7 @@ public static class Program
         var _builder = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: true)
-            .AddEnvironmentVariables(prefix: "DISCORD_");
+            .AddEnvironmentVariables();
         _config = _builder.Build();
 
         var discordClient = new DiscordClient(new DiscordConfiguration()
