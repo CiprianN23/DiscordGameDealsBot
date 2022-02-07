@@ -26,9 +26,9 @@ public class RedditService
         _discordChannelRepository = discordChannelRepository;
         _redditPostRepository = redditPostRepository;
 
-        _redditClient = new RedditClient(appId: _config.GetSection("Reddit:AppId").Value, appSecret: _config.GetSection("Reddit:AppSecret").Value, refreshToken: _config.GetSection("Reddit:RefreshToken").Value);
+        _redditClient = new RedditClient(appId: _config["DISCORD_RedditAppId"], appSecret: _config["DISCORD_RedditAppSecret"], refreshToken: _config["DISCORD_RedditRefreshToken"]);
 
-        var subReddit = _redditClient.Subreddit(_config.GetSection("Reddit:Subreddit").Value);
+        var subReddit = _redditClient.Subreddit(_config["DISCORD_Subreddit"]);
         subReddit.Posts.GetNew();
         subReddit.Posts.MonitorNew();
         subReddit.Posts.NewUpdated += Posts_NewUpdated;
@@ -39,8 +39,6 @@ public class RedditService
 
     private async void Posts_NewRemoved(object? sender, PostsUpdateEventArgs e)
     {
-        Console.WriteLine($"{DateTimeOffset.Now} New post added/removed.");
-
         var databaseRedditPosts = await _redditPostRepository.GetAllAsync();
         foreach (var removedPost in e.Removed)
         {
@@ -65,8 +63,6 @@ public class RedditService
                 await _redditPostRepository.DeleteAsync(removedPost.Permalink);
             }
         }
-
-        await DeleteDealsIfTheyAreExpiredOrRemoved();
     }
 
     private async Task DeleteDealsIfTheyAreExpiredOrRemoved()
@@ -148,6 +144,8 @@ public class RedditService
                     var message = await _discordClient.SendMessageAsync(discordChannel, embed.Build());
                     await _discordMessageRepository.InsertAsync(message.Id, insertedRedditPost, channel.Id);
                 }
+
+                await DeleteDealsIfTheyAreExpiredOrRemoved();
             }
         }
     }
